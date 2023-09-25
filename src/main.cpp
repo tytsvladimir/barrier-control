@@ -18,7 +18,7 @@
 // настройка скорости разгона
 #define speedUp1 70
 #define speedUp2 80
-#define speedUp3 90
+#define speedUp3 100
 
 // джамперы подстройки торможения
 #define pinSlowDown1 9
@@ -48,13 +48,13 @@ void setup()
     pinMode(switchTOP, INPUT);
     pinMode(switchBOTTOM, INPUT);
 
-    pinMode(pinSpeedUp1, INPUT_PULLUP); // 4
-    pinMode(pinSpeedUp2, INPUT_PULLUP); // 5
-    pinMode(pinSpeedUp3, INPUT_PULLUP); // 6
+    pinMode(pinSpeedUp1, INPUT_PULLUP); // 6 pin
+    pinMode(pinSpeedUp2, INPUT_PULLUP); // 5 pin
+    pinMode(pinSpeedUp3, INPUT_PULLUP); // 4 pin
 
-    pinMode(pinSlowDown1, INPUT_PULLUP); // 7
-    pinMode(pinSlowDown2, INPUT_PULLUP); // 8
-    pinMode(pinSlowDown3, INPUT_PULLUP); // 9
+    pinMode(pinSlowDown1, INPUT_PULLUP); // 9 pin
+    pinMode(pinSlowDown2, INPUT_PULLUP); // 8 pin
+    pinMode(pinSlowDown3, INPUT_PULLUP); // 7 pin
     
     initializeSpeed();
 
@@ -64,7 +64,7 @@ void setup()
 
     attachInterrupt(digitalPinToInterrupt(switchTOP), switchTopInterrupt, CHANGE);
     attachInterrupt(digitalPinToInterrupt(switchBOTTOM), switchBottomInterrupt, CHANGE);
-    Timer1.initialize(1000000 / 30000); // 18.5 KHz
+    Timer1.initialize(1000000 / 18500); // 18.5 KHz
 }
 
 bool isCommand = 0;
@@ -123,13 +123,13 @@ void switchTopInterrupt()
     { // если кнопка в 1 (отпущена), значит стрела двигается вверх, включаем замедление
         digitalWrite(ledTOP, LOW);
         Timer1.pwm(outputPWM, 1023 / 100 * slowDown);
-        Serial.println("UP SWITCH - Slow Down 1 ==> GO UP");
+        Serial.println("TOP SWITCH - Slow Down 1 ==> GO UP");
     }
     else if (!digitalRead(switchTOP))
     { // если кнопка в 0 (нажата), значит шлагбаум открыт
         digitalWrite(ledTOP, HIGH);
         Timer1.pwm(outputPWM, 1023 / 100 * 10); // торможение в конце
-        Serial.println("UP SWITCH - Slow Down 2 ==> OPENED");
+        Serial.println("TOP SWITCH - Slow Down 2 ==> OPENED");
     }
 }
 
@@ -141,12 +141,12 @@ void switchBottomInterrupt()
         digitalWrite(ledBOTTOM, LOW);
         if (slowDown == 0) {}
         else Timer1.pwm(outputPWM, 1023 / 100 * slowDown);
-        Serial.println("LOW SWITCH - Slow Down 1 ==> GO DOWN");
+        Serial.println("BOTTOM SWITCH - Slow Down 1 ==> GO DOWN");
     }
     else if (!digitalRead(switchBOTTOM))
     { // если кнопка в 0 (нажата), значит шлагбаум закрыт
         digitalWrite(ledBOTTOM, HIGH);
         Timer1.pwm(outputPWM, 1023 / 100 * 10); // торможение в конце
-        Serial.println("LOW SWITCH - Slow Down 2 ==> CLOSED");
+        Serial.println("BOTTOM SWITCH - Slow Down 2 ==> CLOSED");
     }
 }
