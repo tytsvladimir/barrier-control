@@ -36,6 +36,7 @@ int slowDown; // торможение в %
 void switchTopInterrupt();
 void switchBottomInterrupt();
 void initializeSpeed();
+void warning();
 
 void setup()
 {
@@ -87,7 +88,16 @@ void loop()
     {
         // проверяем, действительно ли нет сигнала на входе
         if (digitalRead(inputCommand) == LOW)
-        {
+        { // если концвой свитч сработал, ничего не делаем
+            if (digitalRead(switchTOP) && !digitalRead(switchBOTTOM) || 
+            !digitalRead(switchTOP) && digitalRead(switchBOTTOM)) {}
+            else { // если не сработал - останавливаем работу, включаем индикацию
+                Serial.println("ERROR SWITCH");
+                Timer1.pwm(outputPWM, 0);
+                detachInterrupt(digitalPinToInterrupt(switchTOP));
+                detachInterrupt(digitalPinToInterrupt(switchBOTTOM));
+                warning();
+            }
         } // если нет, ничего не делаем
         else if (digitalRead(inputCommand) == HIGH)
         { // если есть - включаем шим, ставим флаг в 1
@@ -123,13 +133,13 @@ void switchTopInterrupt()
     { // если кнопка в 1 (отпущена), значит стрела двигается вверх, включаем замедление
         digitalWrite(ledTOP, LOW);
         Timer1.pwm(outputPWM, 1023 / 100 * slowDown);
-        Serial.println("TOP SWITCH - Slow Down 1 ==> GO UP");
+        Serial.println("Top switch is release (1) >> Slow Down 1 >> ⇩⇩⇩ GO DOWN ⇩⇩⇩");
     }
     else if (!digitalRead(switchTOP))
     { // если кнопка в 0 (нажата), значит шлагбаум открыт
         digitalWrite(ledTOP, HIGH);
         Timer1.pwm(outputPWM, 1023 / 100 * 10); // торможение в конце
-        Serial.println("TOP SWITCH - Slow Down 2 ==> OPENED");
+        Serial.println("Top switch is pressed (0) >> Slow Down 2 >> || OPENED ||");
     }
 }
 
@@ -141,12 +151,25 @@ void switchBottomInterrupt()
         digitalWrite(ledBOTTOM, LOW);
         if (slowDown == 0) {}
         else Timer1.pwm(outputPWM, 1023 / 100 * slowDown);
-        Serial.println("BOTTOM SWITCH - Slow Down 1 ==> GO DOWN");
+        Serial.println("Bottom switch is release (1) - Slow Down 1 >> ⇧⇧⇧ GO UP ⇧⇧⇧");
     }
     else if (!digitalRead(switchBOTTOM))
     { // если кнопка в 0 (нажата), значит шлагбаум закрыт
         digitalWrite(ledBOTTOM, HIGH);
         Timer1.pwm(outputPWM, 1023 / 100 * 10); // торможение в конце
-        Serial.println("BOTTOM SWITCH - Slow Down 2 ==> CLOSED");
+        Serial.println("Bottom switch is pressed (0) >> Slow Down 2 >> == CLOSED ==");
     }
+}
+
+void warning() {
+    // индикация ошибки
+    while (1)
+        {
+            digitalWrite(ledTOP, HIGH);
+            digitalWrite(ledBOTTOM, LOW);
+            delay(300);
+            digitalWrite(ledTOP, LOW);
+            digitalWrite(ledBOTTOM, HIGH);
+            delay(300);
+        }
 }
