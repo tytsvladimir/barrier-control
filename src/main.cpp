@@ -75,11 +75,10 @@ void loop()
     if (isCommand)
     {
         // проверяем, действительно ли есть сигнал на входе
-        if (digitalRead(inputCommand) == HIGH)
-        {
-        } // если есть, ничего не делаем
+        if (digitalRead(inputCommand) == HIGH) {} // если есть, ничего не делаем
         else if (digitalRead(inputCommand) == LOW)
-        { // если нет - выключаем ШИМ, ставим флаг в 0
+        {
+            // если нет - выключаем ШИМ, ставим флаг в 0
             Timer1.pwm(outputPWM, 0);
             isCommand = 0;
         }
@@ -88,19 +87,23 @@ void loop()
     {
         // проверяем, действительно ли нет сигнала на входе
         if (digitalRead(inputCommand) == LOW)
-        { // если концвой свитч сработал, ничего не делаем
+        {
+            // если концвой свитч сработал, ничего не делаем
             if (digitalRead(switchTOP) && !digitalRead(switchBOTTOM) || 
             !digitalRead(switchTOP) && digitalRead(switchBOTTOM)) {}
-            else { // если не сработал - останавливаем работу, включаем индикацию
+            // если не сработал - останавливаем работу, включаем индикацию
+            else
+            {
                 Serial.println("ERROR SWITCH");
                 Timer1.pwm(outputPWM, 0);
                 detachInterrupt(digitalPinToInterrupt(switchTOP));
                 detachInterrupt(digitalPinToInterrupt(switchBOTTOM));
                 warning();
             }
-        } // если нет, ничего не делаем
+        }
+        // если есть - включаем шим, ставим флаг в 1
         else if (digitalRead(inputCommand) == HIGH)
-        { // если есть - включаем шим, ставим флаг в 1
+        {
             Timer1.pwm(outputPWM, 1023 / 100 * speedUP);
             isCommand = 1;
         }
@@ -130,13 +133,15 @@ void switchTopInterrupt()
 {
     // сработал верхний свитч - проверяем,
     if (digitalRead(switchTOP))
-    { // если кнопка в 1 (отпущена), значит стрела двигается вверх, включаем замедление
+    {
+        // если кнопка в 1 (отпущена), значит стрела двигается вверх, включаем замедление
         digitalWrite(ledTOP, LOW);
         Timer1.pwm(outputPWM, 1023 / 100 * slowDown);
         Serial.println("Top switch is release (1) >> Slow Down 1 >> ⇩⇩⇩ GO DOWN ⇩⇩⇩");
     }
     else if (!digitalRead(switchTOP))
-    { // если кнопка в 0 (нажата), значит шлагбаум открыт
+    {
+        // если кнопка в 0 (нажата), включаем торможение, шлагбаум открыт
         digitalWrite(ledTOP, HIGH);
         Timer1.pwm(outputPWM, 1023 / 100 * 10); // торможение в конце
         Serial.println("Top switch is pressed (0) >> Slow Down 2 >> || OPENED ||");
@@ -147,14 +152,16 @@ void switchBottomInterrupt()
 {
     // сработал нижний свитч - проверяем,
     if (digitalRead(switchBOTTOM))
-    { // если кнопка в 1 (отпущена), значит стрела двигается вниз, включаем замедление
+    {
         digitalWrite(ledBOTTOM, LOW);
+        // если кнопка в 1 (отпущена), значит стрела двигается вниз, включаем замедление
         if (slowDown == 0) {}
         else Timer1.pwm(outputPWM, 1023 / 100 * slowDown);
         Serial.println("Bottom switch is release (1) - Slow Down 1 >> ⇧⇧⇧ GO UP ⇧⇧⇧");
     }
     else if (!digitalRead(switchBOTTOM))
-    { // если кнопка в 0 (нажата), значит шлагбаум закрыт
+    {
+        // если кнопка в 0 (нажата), включаем торможение, шлагбаум закрыт
         digitalWrite(ledBOTTOM, HIGH);
         Timer1.pwm(outputPWM, 1023 / 100 * 10); // торможение в конце
         Serial.println("Bottom switch is pressed (0) >> Slow Down 2 >> == CLOSED ==");
