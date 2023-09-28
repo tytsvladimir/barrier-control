@@ -10,6 +10,8 @@
 #define switchTOP 3    // вход микрика (Состояние шлагбаума: 1 - закрыт, 0 - открыт)
 #define switchBOTTOM 2 // вход микрика (Состояние шлагбаума: 0 - закрыт, 1 - открыт)
 
+#define amountErrorSwitch 3 // количество допустимых ошибок свитчей (когда один из них сломался либо стрела не дошла до конца)
+
 // джамперы подстройки разгона
 #define pinSpeedUp1 6
 #define pinSpeedUp2 5
@@ -18,7 +20,7 @@
 // настройка скорости разгона
 #define speedUp1 70
 #define speedUp2 80
-#define speedUp3 100
+#define speedUp3 90
 
 // джамперы подстройки торможения
 #define pinSlowDown1 9
@@ -69,6 +71,8 @@ void setup()
 }
 
 bool isCommand = 0;
+int countError = 0;
+bool isTest = 0;
 
 void loop()
 {
@@ -92,13 +96,25 @@ void loop()
             if (digitalRead(switchTOP) && !digitalRead(switchBOTTOM) || 
             !digitalRead(switchTOP) && digitalRead(switchBOTTOM)) {}
             // если не сработал - останавливаем работу, включаем индикацию
-            else
+            else if (!isTest) // если еще не проверяли состояние свитчей - делаем это!
             {
-                Serial.println("ERROR SWITCH");
-                Timer1.pwm(outputPWM, 0);
-                detachInterrupt(digitalPinToInterrupt(switchTOP));
-                detachInterrupt(digitalPinToInterrupt(switchBOTTOM));
-                warning();
+                countError++; // инкрементируем счетчик ошибок
+                isTest = 1; // говорим что мы уже проверили состояние свитчей
+                if (countError < amountErrorSwitch)
+                {
+                    Serial.print("ERROR SWITCH = ");
+                    Serial.println(countError);
+                }
+                else 
+                {
+                    Serial.print("ERROR SWITCH = ");
+                    Serial.println(countError);
+                    Serial.println("WARNING SWITCH");
+                    Timer1.pwm(outputPWM, 0);
+                    detachInterrupt(digitalPinToInterrupt(switchTOP));
+                    detachInterrupt(digitalPinToInterrupt(switchBOTTOM));
+                    warning();
+                }
             }
         }
         // если есть - включаем шим, ставим флаг в 1
@@ -106,6 +122,7 @@ void loop()
         {
             Timer1.pwm(outputPWM, 1023 / 100 * speedUP);
             isCommand = 1;
+            isTest = 0;
         }
     }
 }
