@@ -40,6 +40,7 @@ void setup()
 
 bool isCommand = 0; // если ли команда
 int countError = 0; // счетчик ошибок
+int countWork = 0;
 bool wasCheck = 0; // флаг, была ли проверка
 
 void loop()
@@ -62,7 +63,16 @@ void loop()
         {
             // если концвой свитч сработал, ничего не делаем
             if (digitalRead(switchTOP) && !digitalRead(switchBOTTOM) || 
-            !digitalRead(switchTOP) && digitalRead(switchBOTTOM)) {}
+            !digitalRead(switchTOP) && digitalRead(switchBOTTOM))
+            {
+                countWork += countError > 0 ? 1 : 0; // если ошибки в работе были, считаем количество открываний без ошибок
+                //countError = countWork > 3 ? 0 : countError; // если количество открываний без ошибок > 3, обнуляем счетчик ошибок
+                if (countWork > 3)
+                {
+                    countError = 0;
+                    Serial.println("The error counter has been RESET.");
+                }
+            }
             // если концвой свитч НЕ сработал...
             else if (!wasCheck) // если еще не проверяли состояние свитчей - делаем это!
             {
