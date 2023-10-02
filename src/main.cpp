@@ -5,11 +5,12 @@
 int speedUP;  // ускорение в %
 int slowDown; // торможение в %
 
+char buffer[50];
+
 void switchTopInterrupt();
 void switchBottomInterrupt();
 void initializeSpeed();
 void initializePosition();
-void warning();
 
 void setup()
 {
@@ -39,9 +40,6 @@ void setup()
 }
 
 bool isCommand = 0; // если ли команда
-int countError = 0; // счетчик ошибок
-int countWork = 0;
-bool wasCheck = 0; // флаг, была ли проверка
 
 void loop()
 { // если сигнал на включение ШИМ активен
@@ -59,49 +57,12 @@ void loop()
     else // если сигнал на включение ШИМ НЕ активен
     {
         // проверяем, действительно ли нет сигнала на входе
-        if (digitalRead(inputCommand) == LOW)
-        {
-            // если концвой свитч сработал, ничего не делаем
-            if (digitalRead(switchTOP) && !digitalRead(switchBOTTOM) || 
-            !digitalRead(switchTOP) && digitalRead(switchBOTTOM))
-            {
-                countWork += countError > 0 ? 1 : 0; // если ошибки в работе были, считаем количество открываний без ошибок
-                //countError = countWork > 3 ? 0 : countError; // если количество открываний без ошибок > 3, обнуляем счетчик ошибок
-                if (countWork > 3)
-                {
-                    countError = 0;
-                    Serial.println("The error counter has been RESET.");
-                }
-            }
-            // если концвой свитч НЕ сработал...
-            else if (!wasCheck) // если еще не проверяли состояние свитчей - делаем это!
-            {
-                countError++; // инкрементируем счетчик ошибок
-                wasCheck = 1; // говорим что мы уже проверили состояние свитчей
-                if (countError < amountErrorSwitch)
-                {
-                    Serial.print("ERROR SWITCH = ");
-                    Serial.println(countError);
-                }
-                else 
-                {
-                    // если количество ошибок = допустимому, останавливаем работу контроллера до перезапуска вручную
-                    Serial.print("ERROR SWITCH = ");
-                    Serial.println(countError);
-                    Serial.println("WARNING SWITCH");
-                    Timer1.pwm(outputPWM, 0);
-                    detachInterrupt(digitalPinToInterrupt(switchTOP));
-                    detachInterrupt(digitalPinToInterrupt(switchBOTTOM));
-                    warning();
-                }
-            }
-        }
+        if (digitalRead(inputCommand) == LOW) {}
         // если есть - включаем шим, ставим флаг в 1
         else if (digitalRead(inputCommand) == HIGH)
         {
             Timer1.pwm(outputPWM, 1023 / 100 * speedUP);
             isCommand = 1;
-            wasCheck = 0; // обнулить флаг проверки свитчей
         }
     }
 }
@@ -116,13 +77,9 @@ void initializeSpeed()
     if (digitalRead(pinSlowDown1) == LOW) slowDown = slowDown1;
     else if (digitalRead(pinSlowDown2) == LOW) slowDown = slowDown2;
     else if (digitalRead(pinSlowDown3) == LOW) slowDown = slowDown3;
-
-    Serial.print("⇧"); // ⇧⇩
-    Serial.print(speedUP);
-    Serial.print("⇧ ");
-    Serial.print("  ⇩");
-    Serial.print(slowDown);
-    Serial.println("⇩");
+    
+    sprintf(buffer, "⇧%d⇧   ⇩%d⇩", speedUP, slowDown);
+    Serial.println(buffer);
 }
 
 void initializePosition()
@@ -180,17 +137,4 @@ void switchBottomInterrupt()
         Timer1.pwm(outputPWM, 1023 / 100 * 10); // торможение в конце
         Serial.println("Bottom switch is pressed (0) >> Slow Down 2 >> == CLOSED ==");
     }
-}
-
-void warning() {
-    // индикация ошибки
-    while (1)
-        {
-            digitalWrite(ledTOP, HIGH);
-            digitalWrite(ledBOTTOM, LOW);
-            delay(300);
-            digitalWrite(ledTOP, LOW);
-            digitalWrite(ledBOTTOM, HIGH);
-            delay(300);
-        }
 }
