@@ -15,9 +15,9 @@
 #define pinSpeedUp3 4
 
 // настройка скорости разгона в %
-#define speedUp1 70
-#define speedUp2 80
-#define speedUp3 90
+#define speedUp1 60
+#define speedUp2 70
+#define speedUp3 80
 
 // джамперы подстройки торможения
 #define pinSlowDown1 9
@@ -25,6 +25,9 @@
 #define pinSlowDown3 7
 
 // настройка скорости торможения в %
-#define slowDown1 70
-#define slowDown2 80
-#define slowDown3 90
+#define slowDown1 60
+#define slowDown2 70
+#define slowDown3 80
+
+// задержка перед началом движения
+#define preDelayMillisec 100

@@ -36,7 +36,7 @@ void setup()
 
     attachInterrupt(digitalPinToInterrupt(switchTOP), switchTopInterrupt, CHANGE);
     attachInterrupt(digitalPinToInterrupt(switchBOTTOM), switchBottomInterrupt, CHANGE);
-    Timer1.initialize(1000000 / 18500); // 18.5 KHz
+    Timer1.initialize(1000000 / 10000); // 10 KHz
 }
 
 bool isCommand = 0; // если ли команда
@@ -61,6 +61,7 @@ void loop()
         // если есть - включаем шим, ставим флаг в 1
         else if (digitalRead(inputCommand) == HIGH)
         {
+            delay(preDelayMillisec);
             Timer1.pwm(outputPWM, 1023 / 100 * speedUP);
             isCommand = 1;
         }
